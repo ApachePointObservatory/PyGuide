@@ -7,7 +7,6 @@ Limitations:
 
 History:
 2004-08-04 ROwen
-2005-02-07 ROwen	Modified for PyGuide 1.2.
 """
 import numarray as num
 import numarray.random_array as num_random
@@ -49,9 +48,9 @@ print "Each try is a star whose center is randomly distributed over"
 print "a range of -FWHM/2, FWHM/2 with respect to the"
 print "center of the CCD = the center of the slit."
 print
-print "The slit is along y."
+print "The slit is along i."
 print
-print "fwhm	ampl	bg	xCtr	yCtr	maskWid	fitFWHM	fitAmpl	fitBg	chiSq	fwhmErr	amplErr	bgErr"
+print "fwhm	ampl	bg	ictr	jctr	maskWid	fitFWHM	fitAmpl	fitBg	chiSq	fwhmErr	amplErr	bgErr"
 
 def pctErr(meas, act):
 	return (meas - act) * 100.0 / float(act)
@@ -69,9 +68,9 @@ for ampl in AmplValues:
 
 			num_random.seed(1, 1000)
 			for ii in range(NumTries):
-				xyCtr = num_random.uniform(-fwhm/2.0, fwhm/2.0, shape=(2,)) + nomCtr
+				ctr = num_random.uniform(-fwhm/2.0, fwhm/2.0, shape=(2,)) + nomCtr
 
-				cleanData = PyGuide.FakeData.fakeStar(imShape, xyCtr, sigma, ampl)
+				cleanData = PyGuide.FakeData.fakeStar(imShape, ctr, sigma, ampl)
 				data = PyGuide.FakeData.addNoise(
 					data = cleanData,
 					sky = Sky,
@@ -84,7 +83,7 @@ for ampl in AmplValues:
 					shapeData = PyGuide.starShape(
 						data = data,
 						mask = mask,
-						xyCtr = xyCtr,
+						ijCtr = ctr,
 						predFWHM = fwhm,
 					)
 					bkgnd = Sky + Bias
@@ -93,7 +92,7 @@ for ampl in AmplValues:
 					bkgndErr = pctErr(shapeData.bkgnd, bkgnd)
 					print "%.1f	%.1f	%.1f	%.2f	%.2f	%.2f	%.1f	%.1f	%.1f	%.2f	%.1f	%.1f	%.1f" % (
 						fwhm, ampl, bkgnd,
-						xyCtr[0], xyCtr[1], maskWidth,
+						ctr[0], ctr[1], maskWidth,
 						shapeData.fwhm, shapeData.ampl, shapeData.bkgnd, shapeData.chiSq,
 						fwhmErr, amplErr, bkgndErr,
 					)

@@ -5,18 +5,8 @@ History:
 2004-04-16 ROwen	Added getQuartile, skyStats.
 2004-04-21 ROwen	Added verbosity arg to skyStats and removed _SkyStatsDebug.
 2004-08-04 ROwen	Removed documentation for nonexistent verbosity argument for getQuartile.
-2004-12-01 ROwen	Added __all__.
-2005-02-08 ROwen	Added ijIndFromXYPos, ijPosFromXYPos, xyPosFromIJPos, ds9PosFromXYPos, xyPosFromDS9Pos.
-					Changed subFrameCtr arguments ctr and size (i,j) to xyCtr and xySize.
 """
-__all__ = ["getQuartile", "skyStats", "subFrameCtr",
-	"ijIndFromXYPos", "ijPosFromXYPos", "xyPosFromIJPos",
-	"ds9PosFromXYPos", "xyPosFromDS9Pos",
-]
-
-import math
 import numarray as num
-from Constants import PosMinusIndex
 
 _QuartileResidRatios = (
 	(1.0, 0.0),
@@ -82,16 +72,16 @@ def skyStats(maskedData, verbosity=1):
 	
 	return med, stdDev
 
-def subFrameCtr(data, xyCtr, xySize):
+def subFrameCtr(data, ctr, size):
 	"""Extract a subframe from a 2d array given a center and size.
 	
 	Return a pointer (not a copy).
 
 	Inputs:
-	- data		2-d array of data [i,j]
-	- xyCtr		desired x,y center of subframe (may be float)
-	- xySize	desired x,y size of subframe (may be float);
-				e.g. (5,7) returns a 5x7 subframe
+	- data	2-d array of data [i,j]
+	- ctr	desired i,j center of subframe (may be float)
+	- size	desired i,j size of subframe (may be float);
+			e.g. (5,7) returns a 5x7 subframe
 	
 	Returns two numarray arrays:
 	- offset	i,j index of start of subframe (int);
@@ -99,64 +89,16 @@ def subFrameCtr(data, xyCtr, xySize):
 				matches location subloc + offset in data
 	- subframe	the subframe as a pointer into data (NOT a copy)
 	
-	With ctr in the middle of a pixel:
-	- a size of 0.0 to 1.999... returns 1 pixel
-	- a size of 2.0 to 3.999... returns 3 pixels
-	
-	With ctr at the boundary between two pixels:
-	- A size of 0.0 to 0.999... returns 0 pixels
-	- A size of 1.0 to 2.999... returns 2 pixels
-	
 	If the requested subframe extends outside the boundaries of data,
 	the subframe is truncated without warning. You can tell if it
 	has been truncated by comparing its size to the requested size.
 	
 	If size is odd and the entire subframe fits in data without truncation,
-	then xyCtr is truly centered.
+	then ctr is truly centered.
 	"""
-	ijCtr = ijPosFromXYPos(xyCtr)
-	ijRad = [xySize[ii] / 2.0 for ii in (1, 0)]
-
-	begInd = [int(max(math.ceil(ijCtr[ii] - ijRad[ii]), 0.0)) for ii in (0, 1)]
-	endInd = [int(math.floor(ijCtr[ii] + ijRad[ii])) + 1 for ii in (0, 1)]
-	
-	print "subFrameCtr: xyCtr=%s; xySize=%s; ijCtr=%s; ijRad=%s; begInd=%s; endInd=%s" % (xyCtr, xySize, ijCtr, ijRad, begInd, endInd)
+	rad = num.array(size) / 2.0
+	begInd = num.maximum(ctr - rad, 0.0).astype(num.Int)
+	endInd = (ctr + rad).astype(num.Int)
 	
 	subframe = data[begInd[0]:endInd[0], begInd[1]:endInd[1]]
 	return begInd, subframe
-
-def ijIndFromXYPos(xyPos):
-	"""Return the integer index of the pixel whose center is nearest the specified position.
-	In other words, the same as ijPosFromXYPos but rounded to the nearest int.
-	
-	x,y position convention is defined by PyGuide.Constants.PosMinusIndex (which see).
-	"""
-	# use floor(0.5 + x) instead of round(x) because round(-0.5) is -1, not 0,
-	# making (0.0, 0,0) convert to (-1,-1) instead of (0,0)
-	return [int(math.floor(0.5 + xyPos[ii] - PosMinusIndex)) for ii in (1, 0)]
-	
-def ijPosFromXYPos(xyPos):
-	"""Convert from x,y position to i,j position.
-	
-	x,y position convention is defined by PyGuide.Constants.PosMinusIndex (which see).
-	i,j position has the axes swapped and has (0,0) as the center of the (0,0) pixel.
-	"""
-	return [float(xyPos[ii] - PosMinusIndex) for ii in (1, 0)]
-	
-def xyPosFromIJPos(ijInd):
-	"""Return the x,y position corresponding to the specified i,j position.
-	
-	x,y position is defined by PyGuide.Constants.PosMinusIndex (which see).
-	i,j position has the axes swapped and has (0,0) as the center of the (0,0) pixel.
-	"""
-	return [float(ijInd[ii] + PosMinusIndex) for ii in (1, 0)]
-	
-def ds9PosFromXYPos(xyPos):
-	"""Convert from PyGuide's x,y position to ds9 x,y position.
-	"""
-	return [float(pos - PosMinusIndex + 1.0) for pos in xyPos]
-
-def xyPosFromDS9Pos(ds9Pos):
-	"""Convert from ds9 x,y position to PyGuide's x,y position.
-	"""
-	return [float(pos + PosMinusIndex - 1.0) for pos in ds9Pos]
