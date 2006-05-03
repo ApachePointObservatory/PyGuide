@@ -107,18 +107,13 @@ History:
 					they now ignore ccdInfo.satLevel.
 					Modified to use Float32 omage data instead of UInt16.
 					
-2006-04-06 ROwen	CentroidData: stores null ImUtil.ImStats instance if imStats=None.
-					checkSignal:
-					- bug fix: sometimes returned the wrong thing
-					- improved compatibility when the subregion has no pixels
-2006-04-17 ROwen	Ditch unused "import warnings" (thanks to pychecker).
 """
 __all__ = ['CentroidData', 'centroid',]
 
 import math
 import sys
 import traceback
-# import warnings
+import warnings
 import numarray as num
 import numarray.nd_image
 import numarray.ma
@@ -191,8 +186,6 @@ class CentroidData:
 		self.nSat = nSat
 		
 		self.rad = rad
-		if imStats == None:
-			imStats = ImUtil.ImStats()
 		self.imStats = imStats
 
 		self.xyCtr = xyCtr
@@ -559,12 +552,8 @@ def checkSignal(
 		xyCtr = xyCtr,
 		xySize = (outerRad, outerRad),
 	)
-	subData = subDataObj.getSubFrame().astype(num.Float32) # force type and copy
-	if subData.size() < _MinPixForStats:
-		return False, ImUtil.ImStats(
-			nPts = subData.size(),
-		)
 	subCtrIJ = subDataObj.subIJFromFullIJ(ImUtil.ijPosFromXYPos(xyCtr))
+	subData = subDataObj.getSubFrame().astype(num.Float32) # force type and copy
 	
 	if mask != None:
 		subMaskObj = ImUtil.subFrameCtr(
@@ -595,8 +584,11 @@ def checkSignal(
 			mask = subMask,
 		)
 		if bkgndPixels.count() < _MinPixForStats:
-			return False, ImUtil.ImStats(
-				nPts = bkgndPixels.count(),
+			return CentroidData(
+				isOK = False,
+				msgStr = "Cannot measure bkgnd: too few unmasked pixels (%s<%s)" % (bkgndPixels.count(), _MinPixForStats),
+				rad = rad,
+				imStats = imStats,
 			)
 	
 	imStats = ImUtil.skyStats(bkgndPixels, thresh)
@@ -619,8 +611,8 @@ def checkSignal(
 	del(smoothedData)
 	slices = num.nd_image.find_objects(labels)
 	for ijSlice in slices:
-		minSize = min([slc.stop - slc.start for slc in ijSlice])
-		if minSize >= 2:
+		ijSize = [slc.stop - slc.start for slc in ijSlice]
+		if 1 not in ijSize:
 			return True, imStats
 	return False, imStats
 
