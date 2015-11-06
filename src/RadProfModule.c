@@ -93,10 +93,10 @@ static PyObject *Py_radAsymm(PyObject *dumObj, PyObject *args) {
     
     // Convert arrays to well-behaved arrays of correct type and verify
     // These arrays MUST be decrefed before return.
-    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_IN_ARRAY);
+    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_ARRAY_IN_ARRAY);
     if (dataArry == NULL) goto errorExit;
     if (maskObj != Py_None) {
-        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_IN_ARRAY);
+        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_ARRAY_IN_ARRAY);
         if (maskArry == NULL) goto errorExit;
     }
 
@@ -187,10 +187,10 @@ static PyObject *Py_radAsymmWeighted(PyObject *dumObj, PyObject *args) {
     
     // Convert arrays to well-behaved arrays of correct type and verify
     // These arrays MUST be decrefed before return.
-    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_IN_ARRAY);
+    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_ARRAY_IN_ARRAY);
     if (dataArry == NULL) goto errorExit;
     if (maskObj != Py_None) {
-        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_IN_ARRAY);
+        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_ARRAY_IN_ARRAY);
         if (maskArry == NULL) goto errorExit;
     }
 
@@ -295,17 +295,17 @@ static PyObject *Py_radProf(PyObject *dumObj, PyObject *args) {
     
     // Convert arrays to well-behaved arrays of correct type and verify
     // These arrays MUST be decrefed before return.
-    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_IN_ARRAY);
+    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_ARRAY_IN_ARRAY);
     if (dataArry == NULL) goto errorExit;
     if (maskObj != Py_None) {
-        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_IN_ARRAY);
+        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_ARRAY_IN_ARRAY);
         if (maskArry == NULL) goto errorExit;
     }
-    meanArry = (PyArrayObject *)PyArray_FROM_OTF(meanObj, NPY_FLOAT64, NPY_OUT_ARRAY);
+    meanArry = (PyArrayObject *)PyArray_FROM_OTF(meanObj, NPY_FLOAT64, NPY_ARRAY_OUT_ARRAY);
     if (meanArry == NULL) goto errorExit;
-    varArry =  (PyArrayObject *)PyArray_FROM_OTF(varObj,  NPY_FLOAT64, NPY_OUT_ARRAY);
+    varArry =  (PyArrayObject *)PyArray_FROM_OTF(varObj,  NPY_FLOAT64, NPY_ARRAY_OUT_ARRAY);
     if (varArry == NULL) goto errorExit;
-    nPtsArry = (PyArrayObject *)PyArray_FROM_OTF(nPtsObj, NPY_INT32,   NPY_OUT_ARRAY);
+    nPtsArry = (PyArrayObject *)PyArray_FROM_OTF(nPtsObj, NPY_INT32,   NPY_ARRAY_OUT_ARRAY);
     if (nPtsArry == NULL) goto errorExit;
 
     // Check the input arrays
@@ -516,17 +516,17 @@ static PyObject *Py_radSqProf(PyObject *dumObj, PyObject *args) {
     
     // Convert arrays to well-behaved arrays of correct type and verify
     // These arrays MUST be decrefed before return.
-    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_IN_ARRAY);
+    dataArry = (PyArrayObject *)PyArray_FROM_OTF(dataObj, NPY_FLOAT32, NPY_ARRAY_IN_ARRAY);
     if (dataArry == NULL) goto errorExit;
     if (maskObj != Py_None) {
-        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_IN_ARRAY);
+        maskArry = (PyArrayObject *)PyArray_FROM_OTF(maskObj, NPY_BOOL, NPY_ARRAY_IN_ARRAY);
         if (maskArry == NULL) goto errorExit;
     }
-    meanArry = (PyArrayObject *)PyArray_FROM_OTF(meanObj, NPY_FLOAT64, NPY_OUT_ARRAY);
+    meanArry = (PyArrayObject *)PyArray_FROM_OTF(meanObj, NPY_FLOAT64, NPY_ARRAY_OUT_ARRAY);
     if (meanArry == NULL) goto errorExit;
-    varArry =  (PyArrayObject *)PyArray_FROM_OTF(varObj,  NPY_FLOAT64, NPY_OUT_ARRAY);
+    varArry =  (PyArrayObject *)PyArray_FROM_OTF(varObj,  NPY_FLOAT64, NPY_ARRAY_OUT_ARRAY);
     if (varArry == NULL) goto errorExit;
-    nPtsArry = (PyArrayObject *)PyArray_FROM_OTF(nPtsObj, NPY_INT32,   NPY_OUT_ARRAY);
+    nPtsArry = (PyArrayObject *)PyArray_FROM_OTF(nPtsObj, NPY_INT32,   NPY_ARRAY_OUT_ARRAY);
     if (nPtsArry == NULL) goto errorExit;
     
     radSq = rad*rad;

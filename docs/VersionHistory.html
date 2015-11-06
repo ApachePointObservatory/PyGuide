@@ -12,6 +12,16 @@
 
 <p>Added a link to the new github repository to docs/Manual.html
 
+<h2>2.3.0b1 2015-11-06</h2>
+
+<ul>
+	<li>Added "from __future__ import division, absolute_import, print_function" to library modules.
+	<li>Replaced ==/!= None with is/is not None to improve compatibility with modern numpy and modernize the code. I would have done the same with True and False but no such equality comparisons were found.
+	<li>Use the modern numpy API to eliminate warnings. This turned out to be trivial: define a new constant, import from a different header file and switch from NP_IN_ARRAY and cousins to NP_ARRAY_IN_ARRAY.
+	<li>Simplify setup.py, taking advantage of advances in disutils.
+	<li>Removed support for "--ups" from setup.py because it was broken and was for an ancient version of ups.
+</ul>
+
 <h2>2.2.2b1 2015-05-08</h2>
 
 <ul>

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from __future__ import division, absolute_import, print_function
 """Generates fake ccd data
 
 History:
@@ -16,7 +16,8 @@ __all__ = ["fakeStar", "addNoise"]
 
 import numpy
 import numpy.random
-import ImUtil
+
+from . import ImUtil
 
 _MaxValUInt16 = 2**16 - 1
 

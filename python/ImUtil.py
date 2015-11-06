@@ -1,3 +1,4 @@
+from __future__ import division, absolute_import, print_function
 """Image processing utilities.
 
 History:
@@ -31,8 +32,10 @@ __all__ = ["ImStats", "getQuartile", "skyStats", "subFrameCtr",
 
 import math
 import warnings
+
 import numpy
-import Constants
+
+from . import Constants
 
 _QuartileResidRatios = (
     (1.0, 0.0),
@@ -74,7 +77,7 @@ class ImStats:
     - thresh    threshold used to detect signal
     - dataCut   data cut level
     
-    If outerRad != None then med and stdDev are for pixels
+    If outerRad is not None then med and stdDev are for pixels
     outside a circle of radius "rad" and inside a square
     of size outerRad*2 on a side.
     Otherwise the region used to determine the stats is unknown.
@@ -129,7 +132,7 @@ def skyStats(
         sortedData = dataArr.flatten()
     dataLen = len(sortedData)
     if verbosity >= 2:
-        print "skyStats sorting %d elements" % (dataLen)
+        print("skyStats sorting %d elements" % (dataLen))
     sortedData = numpy.sort(sortedData)
     
     # find sky stats; the iteration improves the values slightly
@@ -139,15 +142,15 @@ def skyStats(
         stdDev = 0.741 * (q3 - q1)
         cutVal = med + (2.35 * stdDev)
         if verbosity >= 2:
-            print "skyStats med=%s, q1=%s, q4=%s, stdDev=%s, cutVal=%s" % (med, q1, q3, stdDev, cutVal)
+            print("skyStats med=%s, q1=%s, q4=%s, stdDev=%s, cutVal=%s" % (med, q1, q3, stdDev, cutVal))
         if ii == MaxIter:
             break
         cutInd = numpy.searchsorted(sortedData, [cutVal])[0]
         if verbosity >= 2:
-            print "skStats cutInd=%d, sortedData[cutInd]=%d" % (cutInd, sortedData[cutInd])
+            print("skStats cutInd=%d, sortedData[cutInd]=%d" % (cutInd, sortedData[cutInd]))
         if cutInd < 3:
             if verbosity >= 1:
-                print "skStats aborting iteration at step %s; not enough data to cut further" % (ii,)
+                print("skStats aborting iteration at step %s; not enough data to cut further" % (ii,))
             break
         dataLen = cutInd
     
@@ -182,7 +185,7 @@ class SubFrame:
         desEndInd,
     ):
         self.dataArr = numpy.array(dataArr)
-        #print "SubFrame(data%s, desBegInd=%s, desEndInd=%s)" % (self.dataArr.shape, desBegInd, desEndInd)
+        #print("SubFrame(data%s, desBegInd=%s, desEndInd=%s)" % (self.dataArr.shape, desBegInd, desEndInd))
         
         # round desired i,j index (just in case)
         self.desBegInd = [int(round(val)) for val in desBegInd]
@@ -195,7 +198,7 @@ class SubFrame:
         # compute amount truncated at beginning and end
         self.begCut = [self.begInd[ii] - self.desBegInd[ii] for ii in (0,1)]
         self.endCut = [self.desEndInd[ii] - self.endInd[ii] for ii in (0,1)]
-        #print "SubFrame: begInd=%s; endInd=%s; begCutIJ=%s, endCutIJ=%s" % (self.begInd, self.endInd, self.begCut, self.endCut)
+        #print("SubFrame: begInd=%s; endInd=%s; begCutIJ=%s, endCutIJ=%s" % (self.begInd, self.endInd, self.begCut, self.endCut))
 
     def getIJLim(self):
         """Return (min i, min j, max i, max j) of subframe in full frame coords"""
@@ -275,7 +278,7 @@ def subFrameCtr(data, xyCtr, xySize):
     If size is odd and the entire subframe fits in data without truncation,
     then xyCtr is truly centered.
     """
-    #print "subFrameCtr(data%s, xyCtr=%s, xySize=%s)" % (data.shape, xyCtr, xySize)
+    #print("subFrameCtr(data%s, xyCtr=%s, xySize=%s)" % (data.shape, xyCtr, xySize))
     ijCtr = ijPosFromXYPos(xyCtr)
     ijRad = [xySize[ii] / 2.0 for ii in (1, 0)]
     
@@ -332,7 +335,7 @@ def openDS9Win(title=Constants.DS9Title, doRaise=False):
 
 if __name__ == "__main__":
     a = numpy.arange(121, shape=[11, 11])
-    print a
+    print(a)
     
     for xyCtr, xySize in [
         ((5.5, 5.5), (5.9999, 6.0)),
@@ -343,5 +346,5 @@ if __name__ == "__main__":
         ((10.0, 10.0), (4.9999, 5.0)),
     ]:
         sub = subFrameCtr(a, xyCtr, xySize)
-        print "shape=%s, xyCtr=%s, xySubCtr=%s" % (sub.getSubFrame().shape, xyCtr, sub.subXYFromFullXY(xyCtr))
-        print
+        print("shape=%s, xyCtr=%s, xySubCtr=%s" % (sub.getSubFrame().shape, xyCtr, sub.subXYFromFullXY(xyCtr)))
+        print()

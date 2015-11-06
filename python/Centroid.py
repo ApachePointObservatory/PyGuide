@@ -1,3 +1,4 @@
+from __future__ import division, absolute_import, print_function
 """Measure centroids.
 
 Note: as with all PyGuide routines, the coordinate system origin
@@ -110,13 +111,14 @@ __all__ = ['CentroidData', 'centroid',]
 import math
 import sys
 import traceback
-# import warnings
+
 import numpy
 import numpy.ma
 import scipy.ndimage
-import radProf
-import Constants
-import ImUtil
+
+from .Constants import DefThresh
+from . import ImUtil
+from . import radProf
 
 def _fmtList(alist):
     """Return "alist[0], alist[1], ..."
@@ -183,12 +185,12 @@ class CentroidData:
         self.nSat = nSat
         
         self.rad = rad
-        if imStats == None:
+        if imStats is None:
             imStats = ImUtil.ImStats()
         self.imStats = imStats
 
         self.xyCtr = xyCtr
-        if xyErr == None:
+        if xyErr is None:
             xyErr = numpy.array([numpy.nan, numpy.nan])
         self.xyErr = xyErr
         
@@ -237,7 +239,7 @@ def basicCentroid(
     but with no imStats info.
     """
     if verbosity > 1:
-        print "basicCentroid(xyGuess=%s, rad=%s, ccdInfo=%s)" % (xyGuess, rad, ccdInfo)
+        print("basicCentroid(xyGuess=%s, rad=%s, ccdInfo=%s)" % (xyGuess, rad, ccdInfo))
     # condition and check inputs
     data = conditionData(data)
     mask = conditionMask(mask)
@@ -246,7 +248,7 @@ def basicCentroid(
         raise ValueError("initial guess=%r must have 2 elements" % (xyGuess,))
     rad = int(round(max(rad, _MinRad)))
     if verbosity > 2:
-        print "basicCentroid: rounded rad=%s" % (rad,)
+        print("basicCentroid: rounded rad=%s" % (rad,))
 
     # compute index of pixel closest to initial guess
     ijIndGuess = ImUtil.ijIndFromXYPos(xyGuess)
@@ -259,7 +261,7 @@ def basicCentroid(
     if ds9Win:
         # show masked data in frame 1 and unmasked data in frame 2
         ds9Win.xpaset("frame 1")
-        if mask != None:
+        if mask is not None:
             ds9Win.showArray(data * (mask==0))
         else:
             ds9Win.showArray(data)
@@ -299,8 +301,8 @@ def basicCentroid(
 #                       data, mask, (ii, jj), rad)
     
                     if verbosity > 3:
-                        print "basicCentroid: ind=[%s, %s] ctr=(%s, %s) asymm=%10.1f, totPts=%s, totCounts=%s" % \
-                            (i, j, ii, jj, asymmArr[i, j], totPtsArr[i, j], totCountsArr[i, j])
+                        print("basicCentroid: ind=[%s, %s] ctr=(%s, %s) asymm=%10.1f, totPts=%s, totCounts=%s" % \
+                            (i, j, ii, jj, asymmArr[i, j], totPtsArr[i, j], totCountsArr[i, j]))
     
             # have error matrix. Find minimum
             ii, jj = scipy.ndimage.minimum_position(asymmArr)
@@ -308,16 +310,16 @@ def basicCentroid(
             jj -= 1
     
             if verbosity > 2:
-                print "basicCentroid: error matrix min ii=%d, jj=%d, errmin=%5.1f" % (ii, jj, asymmArr[ii,jj])
+                print("basicCentroid: error matrix min ii=%d, jj=%d, errmin=%5.1f" % (ii, jj, asymmArr[ii,jj]))
                 if verbosity > 3:
-                    print "basicCentroid: asymm matrix =\n", asymmArr
+                    print("basicCentroid: asymm matrix =\n", asymmArr)
     
             if (ii != 0 or jj != 0):
                 # minimum error not in center; walk and try again
                 maxi += ii
                 maxj += jj
                 if verbosity > 2:
-                    print "shift by", -ii, -jj, "to", maxi, maxj
+                    print("shift by", -ii, -jj, "to", maxi, maxj)
     
                 if ((maxi - ijIndGuess[0])**2 + (maxj - ijIndGuess[1])**2) >= rad**2:
                     raise RuntimeError("could not find star within %r pixels" % (rad,))
@@ -331,7 +333,7 @@ def basicCentroid(
                 break
     
         if verbosity > 2:
-            print "basicCentroid: found ijMax=%s after %r iterations" % ((maxi, maxj), niter,)
+            print("basicCentroid: found ijMax=%s after %r iterations" % ((maxi, maxj), niter,))
         
         # perform a parabolic fit to find true centroid
         # and compute the error estimate
@@ -354,8 +356,8 @@ def basicCentroid(
         xyCtr = ImUtil.xyPosFromIJPos(ijCtr)
     
         if verbosity > 2:
-            print "basicCentroid: asymmArr[0:3, 1]=%s, ai=%s, bi=%s, di=%s, iCtr=%s" % (asymmArr[0:3, 1], ai, bi, di, ijCtr[0])
-            print "basicCentroid: asymmArr[1, 0:3]=%s, aj=%s, bj=%s, dj=%s, jCtr=%s" % (asymmArr[1, 0:3], aj, bj, dj, ijCtr[1])
+            print("basicCentroid: asymmArr[0:3, 1]=%s, ai=%s, bi=%s, di=%s, iCtr=%s" % (asymmArr[0:3, 1], ai, bi, di, ijCtr[0]))
+            print("basicCentroid: asymmArr[1, 0:3]=%s, aj=%s, bj=%s, dj=%s, jCtr=%s" % (asymmArr[1, 0:3], aj, bj, dj, ijCtr[1]))
         
         # crude error estimate, based on measured asymmetry
         # note: I also tried using the minimum along i,j but that sometimes is negative
@@ -372,7 +374,7 @@ def basicCentroid(
     
 
         # count # saturated pixels, if satMask available
-        if satMask == None:
+        if satMask is None:
             nSat = None
         else:
             ctrPixIJ = (maxi, maxj)
@@ -390,7 +392,7 @@ def basicCentroid(
                 return ((i-subCtrIJ[0])**2 + (j-subCtrIJ[1])**2) <= rad**2
             maybeSatPixel = numpy.fromfunction(makeDisk, subSatMask.shape)
 
-            if mask != None:
+            if mask is not None:
                 subMaskObj = ImUtil.subFrameCtr(
                     mask,
                     xyCtr = ctrPixXY,
@@ -413,14 +415,14 @@ def basicCentroid(
             asymm = asymmArr[1,1],
         )
         if verbosity > 2:
-            print "basicCentroid: %s" % (ctrData,)
+            print("basicCentroid: %s" % (ctrData,))
         return ctrData
 
     except Exception as e:
         if verbosity > 1:
             traceback.print_exc(file=sys.stderr)
         elif verbosity > 0:
-            print "basicCentroid failed: %s" % (e,)
+            print("basicCentroid failed: %s" % (e,))
         return CentroidData(
             isOK = False,
             msgStr = str(e),
@@ -435,7 +437,7 @@ def centroid(
     xyGuess,
     rad,
     ccdInfo,
-    thresh = Constants.DefThresh,
+    thresh = DefThresh,
     doSmooth = True,
     verbosity = 0,
     doDS9 = False,
@@ -464,9 +466,9 @@ def centroid(
     Returns a CentroidData object (which see for more info).
     """
     if verbosity > 2:
-        print "data =", data
-        print "mask =", mask
-        print "centroid(xyGuess=%s, rad=%s, ccdInfo=%s, thresh=%s)" % (xyGuess, rad, ccdInfo, thresh)
+        print("data =", data)
+        print("mask =", mask)
+        print("centroid(xyGuess=%s, rad=%s, ccdInfo=%s, thresh=%s)" % (xyGuess, rad, ccdInfo, thresh))
     
     if checkSig[0]:
         signalOK, imStats = checkSignal(
@@ -517,7 +519,7 @@ def checkSignal(
     mask,
     xyCtr,
     rad,
-    thresh = Constants.DefThresh,
+    thresh = DefThresh,
     doSmooth = True,
     verbosity = 0,
 ):
@@ -548,7 +550,7 @@ def checkSignal(
       max(data) >= thresh*stdDev + median
     """
     if verbosity > 2:
-        print "checkSignal(xyCtr=%s, rad=%s, thresh=%s)" % (xyCtr, rad, thresh)
+        print("checkSignal(xyCtr=%s, rad=%s, thresh=%s)" % (xyCtr, rad, thresh))
 
     # check check inputs
     if len(xyCtr) != 2:
@@ -564,14 +566,14 @@ def checkSignal(
     subData = subDataObj.getSubFrame().astype(numpy.float32) # force type and copy
     if subData.size < _MinPixForStats:
         if verbosity > 1:
-            print "checkSignal: signalOK=False because subData.size = %d < %d = _MinPixForStats" %\
-                (subData.size, _MinPixForStats)
+            print("checkSignal: signalOK=False because subData.size = %d < %d = _MinPixForStats" %
+                (subData.size, _MinPixForStats))
         return False, ImUtil.ImStats(
             nPts = subData.size,
         )
     subCtrIJ = subDataObj.subIJFromFullIJ(ImUtil.ijPosFromXYPos(xyCtr))
     
-    if mask != None:
+    if mask is not None:
         subMaskObj = ImUtil.subFrameCtr(
             mask,
             xyCtr = xyCtr,
@@ -593,12 +595,12 @@ def checkSignal(
     if bkgndPixels.size < _OuterRadAdd**2:
         # too few unmasked pixels in outer region; try not masking off the star
         if verbosity > 2:
-            print "checkSignal: too few good pixels in outer region; testing entire region"
+            print("checkSignal: too few good pixels in outer region; testing entire region")
         bkgndPixels = numpy.extract(subData, numpy.logical_not(subMask))
         if bkgndPixels.size < _MinPixForStats:
             if verbosity > 1:
-                print "checkSignal: signalOK=False because bkgndPixels.size = %d < %d = _MinPixForStats" % \
-                    (bkgndPixels.size, _MinPixForStats)
+                print("checkSignal: signalOK=False because bkgndPixels.size = %d < %d = _MinPixForStats" %
+                    (bkgndPixels.size, _MinPixForStats))
             return False, ImUtil.ImStats(
                 nPts = bkgndPixels.size,
             )
@@ -624,7 +626,7 @@ def checkSignal(
     labels, numElts = scipy.ndimage.label(smoothedData > imStats.dataCut, shapeArry)
     del(smoothedData)
     if verbosity > 2:
-        print "number of candidate blobs = %s" % (numElts,)
+        print("number of candidate blobs = %s" % (numElts,))
     slices = scipy.ndimage.find_objects(labels)
     for ijSlice in slices:
         minSize = min([slc.stop - slc.start for slc in ijSlice])
@@ -632,7 +634,7 @@ def checkSignal(
             return True, imStats
 
     if verbosity > 1:
-        print "checkSignal: signalOK=False because no stars found"
+        print("checkSignal: signalOK=False because no stars found")
     return False, imStats
 
 
@@ -652,7 +654,7 @@ def conditionMask(mask):
 
     Warning: does not copy the data unless necessary.
     """
-    if mask == None:
+    if mask is None:
         return None
     return conditionArr(mask, numpy.bool)
 

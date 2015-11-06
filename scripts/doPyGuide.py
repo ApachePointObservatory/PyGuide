@@ -1,4 +1,5 @@
 #!/usr/bin/env python -i
+from __future__ import division, absolute_import, print_function
 """Measures stars in a given image file, displaying the image in ds9
 and reporting star positions and shape information on stdout.
 
@@ -68,7 +69,7 @@ doDS9 = True
 try:
     ds9Win = RO.DS9.DS9Win(PyGuide.Constants.DS9Title)
 except Exception as e:
-    print "Cannot use ds9; error = %s" % (e,)
+    print("Cannot use ds9; error = %s" % (e,))
     doDS9 = False
 
 CCDInfoNames = ("bias", "readNoise", "ccdGain", "satLevel")
@@ -108,7 +109,7 @@ def doFindStars(
     ccdInfo = PyGuide.CCDInfo(**ccdInfoDict)
     
     # find stars and centroid
-    print "Calling PyGuide.findStars"
+    print("Calling PyGuide.findStars")
     ctrDataList, imStats = PyGuide.findStars(
         data = im,
         mask = mask,
@@ -116,7 +117,7 @@ def doFindStars(
         ccdInfo = ccdInfo,
     **kargs)
 
-    print "%s stars found:" % (len(ctrDataList),)
+    print("%s stars found:" % (len(ctrDataList),))
     printStarHeader()
     for ctrData in ctrDataList:
         # measure star shape
@@ -128,7 +129,7 @@ def doFindStars(
                 rad = ctrData.rad,
             )
         except RuntimeError as e:
-            print "starShape failed: %s" % (e,)
+            print("starShape failed: %s" % (e,))
             shapeData = PyGuide.StarShapeData()
 
         printStarData(ctrData, shapeData)
@@ -148,8 +149,8 @@ def doCentroid(
     """
     global im, imFits, mask, maskFits, satMask, satMaskFits, isSat, sd
     im, mask, satMask = loadFiles(imName, maskName, satMaskName, invertMask)
-    if xyGuess == None:
-        print "xyGuess is required"
+    if xyGuess is None:
+        print("xyGuess is required")
         return
     
     # check keyword arguments
@@ -169,8 +170,8 @@ def doCentroid(
         ccdInfoDict[paramName] = kargs.pop(paramName)
     ccdInfo = PyGuide.CCDInfo(**ccdInfoDict)
     
-    if kargs["rad"] == None:
-        print "rad argument is required because the default is presently None"
+    if kargs["rad"] is None:
+        print("rad argument is required because the default is presently None")
         return
     
     verbosity = kargs["verbosity"]
@@ -185,7 +186,7 @@ def doCentroid(
     **kargs)
 
     if not ctrData.isOK:
-        print "centroid failed:", ctrData.msgStr
+        print("centroid failed:", ctrData.msgStr)
         return
 
     shapeData = PyGuide.starShape(
@@ -200,7 +201,7 @@ def doCentroid(
     printStarData(ctrData, shapeData)
 
     if not shapeData.isOK:
-        print "starShape failed:", shapeData.msgStr
+        print("starShape failed:", shapeData.msgStr)
 
 def doStarShape(
     imName = None,
@@ -217,12 +218,12 @@ def doStarShape(
     """
     global im, imFits, mask, maskFits
     im, mask, satMask = loadFiles(imName, maskName, None, invertMask)
-    if xyCtr == None:
-        print "xyCtr is required"
+    if xyCtr is None:
+        print("xyCtr is required")
         return
     
-    if rad == None:
-        print "rad argument is required because the default is presently None"
+    if rad is None:
+        print("rad argument is required because the default is presently None")
         return
     
     shapeData = PyGuide.starShape(
@@ -233,17 +234,17 @@ def doStarShape(
         verbosity = verbosity,
     )
 
-    print "   xctr    yctr         ampl     bkgnd    fwhm     rad     chiSq"
+    print("   xctr    yctr         ampl     bkgnd    fwhm     rad     chiSq")
     try:
-        print "%7.2f %7.2f %13.1f %9.1f %7.1f %7d %7.1f" % (
+        print("%7.2f %7.2f %13.1f %9.1f %7.1f %7d %7.1f" % (
             xyCtr[0], xyCtr[1], shapeData.ampl, shapeData.bkgnd, shapeData.fwhm, rad, shapeData.chiSq,
-        )
+        ))
     except (ValueError, TypeError) as e:
-        print "(printing free-form due to format error: %s)" % (e,)
-        print xyCtr[0], xyCtr[1], shapeData.ampl, shapeData.bkgnd, shapeData.fwhm, rad, shapeData.chiSq,
+        print("(printing free-form due to format error: %s)" % (e,))
+        print(xyCtr[0], xyCtr[1], shapeData.ampl, shapeData.bkgnd, shapeData.fwhm, rad, shapeData.chiSq)
 
     if not shapeData.isOK:
-        print "starShape failed:", shapeData.msgStr
+        print("starShape failed:", shapeData.msgStr)
 
 def loadFiles(
     imName = None,
@@ -263,18 +264,18 @@ def loadFiles(
     global im, imFits, mask, maskFits, satMask, satMaskFits, isSat, sd
     if imName:
         imFits = pyfits.open(imName)
-        print "Loading image %s into imFits and im" % (imName,)
+        print("Loading image %s into imFits and im" % (imName,))
         dataSec = parseDataSec(imFits[0].header.get("DATASEC"))
         dataShape = imFits[0].data.shape
-        if dataSec == None:
+        if dataSec is None:
             dataSec = [0, dataShape[0], 0, dataShape[1]]
         im = imFits[0].data[dataSec[0]:dataSec[1], dataSec[2]:dataSec[3]]
     if maskName:
-        print "Loading bad pixel mask %s into maskFits and mask" % (maskName,)
+        print("Loading bad pixel mask %s into maskFits and mask" % (maskName,))
         maskFits = pyfits.open(maskName)
         mask = maskFits[0].data[dataSec[0]:dataSec[1], dataSec[2]:dataSec[3]] > 0.1
     if satMaskName:
-        print "Loading saturated pixel mask %s into satMaskFits and satMask" % (satMaskName,)
+        print("Loading saturated pixel mask %s into satMaskFits and satMask" % (satMaskName,))
         satMaskFits = pyfits.open(satMaskName)
         satMask = satMaskFits[0].data[dataSec[0]:dataSec[1], dataSec[2]:dataSec[3]] > 0.1
     return im, mask, satMask
@@ -292,7 +293,7 @@ def parseDataSec(dataSecStr):
     
     On error prints a message to stderr and returns None
     """
-    if dataSecStr == None:
+    if dataSecStr is None:
         return None
     try:
         trimStr = dataSecStr[1:-1]
@@ -313,37 +314,37 @@ def parseDataSec(dataSecStr):
 
 def printStarHeader():
     """Print star position data header"""
-    print "   xctr    yctr    xerr    yerr          ampl     bkgnd    fwhm     rad     pix    nSat   chiSq"
+    print("   xctr    yctr    xerr    yerr          ampl     bkgnd    fwhm     rad     pix    nSat   chiSq")
 
 def printStarData(ctrData, shapeData):
     """Print star position data"""
     # print results
     try:
-        print "%7.2f %7.2f %7.2f %7.2f %13.1f %9.1f %7.1f %7d %7d %7s %7.1f" % (
+        print("%7.2f %7.2f %7.2f %7.2f %13.1f %9.1f %7.1f %7d %7d %7s %7.1f" % (
             ctrData.xyCtr[0], ctrData.xyCtr[1],
             ctrData.xyErr[0], ctrData.xyErr[1],
             shapeData.ampl, shapeData.bkgnd, shapeData.fwhm,
             ctrData.rad, ctrData.pix, ctrData.nSat, shapeData.chiSq,
-        )
+        ))
     except (ValueError, TypeError) as e:
-        print "(printing free-form due to format error: %s)" % (e,)
-        print ctrData.xyCtr[0], ctrData.xyCtr[1], \
-            ctrData.xyErr[0], ctrData.xyErr[1], \
-            shapeData.ampl, shapeData.bkgnd, shapeData.fwhm, \
-            ctrData.rad, ctrData.pix, ctrData.nSat, shapeData.chiSq
+        print("(printing free-form due to format error: %s)" % (e,))
+        print(ctrData.xyCtr[0], ctrData.xyCtr[1],
+            ctrData.xyErr[0], ctrData.xyErr[1],
+            shapeData.ampl, shapeData.bkgnd, shapeData.fwhm,
+            ctrData.rad, ctrData.pix, ctrData.nSat, shapeData.chiSq)
 
 def showDef():
     """Show current value of various global variables
     which are used as defaults for parameters of doFindStars.
     """
-    print "Global variables (defaults for doFindStars):"
+    print("Global variables (defaults for doFindStars):")
     globalDict = globals()
     for paramName in FindParamNames:
-        print "%s = %s" % (paramName, globalDict[paramName])
+        print("%s = %s" % (paramName, globalDict[paramName]))
     print
 
 def help():
-    print """The following variables are available:
+    print("""The following variables are available:
 
 Default aguments for doFindStars and doCentroid:
 bias        bias remaining in the data, if any (ADU)
@@ -387,7 +388,7 @@ loadFiles(imName, maskname, satMaskName) loads a new image, mask and/or satMask
 ds9Win.showArray(arry) displays an array in ds9
 showDef() prints the current defaults
 help() prints this text
-"""
+""")
 
 showDef()
 help()

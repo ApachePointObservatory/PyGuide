@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from __future__ import division, absolute_import, print_function
 """StarShape
 
 Fit a a star to a symmetrical double gaussian.
@@ -90,12 +90,14 @@ import math
 import sys
 import traceback
 import warnings
+
 import numpy
 import numpy.ma
 import scipy.optimize
-import radProf as radProfModule
-from Constants import FWHMPerSigma, NaN
-import ImUtil
+
+from .Constants import FWHMPerSigma, NaN
+from . import ImUtil
+from . import radProf as radProfModule
 
 # minimum radius
 _MinRad = 3.0
@@ -161,8 +163,8 @@ def starShape(
     - doPlot    if True, output diagnostics using matplotlib
     """
     if verbosity >= 2:
-        print "starShape(data[%s,%s]; xyCtr=%.2f, %.2f; rad=%.1f)" % \
-            (data.shape[0], data.shape[1], xyCtr[0], xyCtr[1], rad)
+        print("starShape(data[%s,%s]; xyCtr=%.2f, %.2f; rad=%.1f)" % \
+            (data.shape[0], data.shape[1], xyCtr[0], xyCtr[1], rad))
 
     # compute index of nearest pixel center (pixel whose center is nearest xyCtr)
     ijCtrInd = ImUtil.ijIndFromXYPos(xyCtr)
@@ -186,8 +188,8 @@ def starShape(
     try:
         gsData = _fitRadProfile(radProf, var, nPts, rad, verbosity=verbosity, doPlot=doPlot)
         if verbosity >= 2:
-            print "starShape: ampl=%.1f; fwhm=%.1f; bkgnd=%.1f; chiSq=%.2f" % \
-                (gsData.ampl, gsData.fwhm, gsData.bkgnd, gsData.chiSq)
+            print("starShape: ampl=%.1f; fwhm=%.1f; bkgnd=%.1f; chiSq=%.2f" % \
+                (gsData.ampl, gsData.fwhm, gsData.bkgnd, gsData.chiSq))
     except Exception as e:
         return StarShapeData(isOK = False, msgStr = str(e))
     
@@ -206,8 +208,8 @@ def starShape(
     gsData.fwhm = math.sqrt(corrSigSq) / FWHMPerSigma
     
     if verbosity >= 2:
-        print "starShape: ijOff=%.2f, %.2f; offSq=%.2f; rawFWHM=%.3f; corrFWHM=%.3f" % \
-            (ijOff[0], ijOff[1], offSq, rawFWHM, gsData.fwhm)
+        print("starShape: ijOff=%.2f, %.2f; offSq=%.2f; rawFWHM=%.3f; corrFWHM=%.3f" % \
+            (ijOff[0], ijOff[1], offSq, rawFWHM, gsData.fwhm))
         
     return gsData
 
@@ -227,8 +229,8 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     Returns a StarShapeData object
     """
     if verbosity >= 2:
-        print "_fitRadProfile(radProf[%s]=%s\n, var[%s]=%s\n, nPts[%s]=%s, rad=%s)" % \
-            (len(radProf), radProf, len(var), var, len(nPts), nPts, rad)
+        print("_fitRadProfile(radProf[%s]=%s\n, var[%s]=%s\n, nPts[%s]=%s, rad=%s)" %
+            (len(radProf), radProf, len(var), var, len(nPts), nPts, rad))
 
     radSq = radProfModule.radSqByRadInd(len(radProf))
     totPnts = numpy.sum(nPts)
@@ -280,7 +282,7 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     minChiSq = BadChiSq
     
     if verbosity > 2:
-        print "find bracketing values"
+        print("find bracketing values")
     for ind in range(nTrials):
         fwhm = fwhmArr[ind]
         ampl, bkgnd, chiSq, seeProf = _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm)
@@ -305,18 +307,18 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     firstInd = max(0, minInd - 2)
     lastInd = min(nTrials-1, minInd + 2)
     if verbosity > 2:
-        print "firstInd=%d; guess minInd=%d, lastInd=%d" % (firstInd, minInd, lastInd)
+        print("firstInd=%d; guess minInd=%d, lastInd=%d" % (firstInd, minInd, lastInd))
     
     fwhmFirst = fwhmArr[firstInd]
     fwhmMin = fwhmArr[minInd]
     fwhmLast = fwhmArr[lastInd]
     fwhmBracket = (fwhmFirst, fwhmMin, fwhmLast)    
     if verbosity > 2:
-        print "fwhmFirst=%0.1f; guess fwhmMin=%0.1f; fwhmLast=%0.1f" % (fwhmFirst, fwhmMin, fwhmLast)
+        print("fwhmFirst=%0.1f; guess fwhmMin=%0.1f; fwhmLast=%0.1f" % (fwhmFirst, fwhmMin, fwhmLast))
 
     fwhmMin = scipy.optimize.brent(myfunc, brack=fwhmBracket)
     if verbosity > 2:
-        print "optimized fwhmMin=%0.1f" % (fwhmMin,)
+        print("optimized fwhmMin=%0.1f" % (fwhmMin,))
 
     # compute final answers at fwhmMin
     ampl, bkgnd, chiSq, seeProf = _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhmMin)
@@ -337,8 +339,8 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
 
 def _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosity=0):
     if verbosity >= 3:
-        print "_fitIter(radProf=%s, nPts=%s, radWeight=%s, radSq=%s, totPnts=%s, totCounts=%s, fwhm=%s)" % \
-            (radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm)
+        print("_fitIter(radProf=%s, nPts=%s, radWeight=%s, radSq=%s, totPnts=%s, totCounts=%s, fwhm=%s)" %
+            (radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm))
 
     # compute the seeing profile for the specified width parameter
     seeProf = _seeProf(radSq, fwhm)
@@ -350,8 +352,9 @@ def _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosit
     sumSeeProfRadProf = numpy.sum(nPtsSeeProf*radProf)
 
     if verbosity >= 3:
-        print "_fitIter sumSeeProf=%s, sumSeeProfSq=%s, totCounts=%s, sumSeeProfRadProf=%s, totPnts=%s" % \
+        print("_fitIter sumSeeProf=%s, sumSeeProfSq=%s, totCounts=%s, sumSeeProfRadProf=%s, totPnts=%s" %
             (sumSeeProf, sumSeeProfSq, totCounts, sumSeeProfRadProf, totPnts)
+        )
 
     # compute amplitude and background
     # using standard linear least squares fit equations
@@ -369,8 +372,9 @@ def _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosit
         raise RuntimeError("Could not compute shape: %s" % e)
 
     if verbosity >= 3:
-        print "_fitIter: ampl=%s; bkgnd=%s; fwhm=%s; chiSq=%.2f" % \
+        print("_fitIter: ampl=%s; bkgnd=%s; fwhm=%s; chiSq=%.2f" %
             (ampl, bkgnd, fwhm, chiSq)
+        )
     
     return ampl, bkgnd, chiSq, seeProf
 

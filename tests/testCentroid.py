@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division, absolute_import, print_function
 """Test PyGuide.centroid with masked data.
 
 History:
@@ -15,7 +16,6 @@ History:
 2008-01-02 ROwen    Added DoSmooth constant.
 2009-11-20 ROwen    Modified to use numpy.
 """
-import sys
 import numpy
 import PyGuide
 import RO.DS9
@@ -65,7 +65,7 @@ for arrShape, actCtr, sigma, ampl, scanRadFactor, maskLim in testData:
         ccdInfo = CCDInfo,
     )
 
-    print "\nactual center = %6.2f, %6.2f, sigma = %.2f, scanRad = %d" % (actCtr[0], actCtr[1], sigma, scanRad)
+    print("\nactual center = %6.2f, %6.2f, sigma = %.2f, scanRad = %d" % (actCtr[0], actCtr[1], sigma, scanRad))
     mask = None
     ctrData = PyGuide.centroid(
         data = data,
@@ -78,14 +78,14 @@ for arrShape, actCtr, sigma, ampl, scanRadFactor, maskLim in testData:
     )
     
     if not ctrData.isOK:
-        print "centroid failed: %s" % (ctrData.msgStr,)
+        print("centroid failed: %s" % (ctrData.msgStr,))
         continue
     
     measCtr = ctrData.xyCtr
     nCounts = ctrData.counts
     nPts = ctrData.pix
-    print "meas err   = %6.2f, %6.2f; est err = %.2f, %.2f; nCounts = %.0f; nPts = %d" % \
-        (measCtr[0] - actCtr[0], measCtr[1] - actCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], nCounts, nPts)
+    print("meas err   = %6.2f, %6.2f; est err = %.2f, %.2f; nCounts = %.0f; nPts = %d" %
+        (measCtr[0] - actCtr[0], measCtr[1] - actCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], nCounts, nPts))
     mask = numpy.zeros(arrShape, numpy.bool)
     for row in range(maskLim[0], maskLim[1]+1):
         mask[row,:] = 1
@@ -101,8 +101,8 @@ for arrShape, actCtr, sigma, ampl, scanRadFactor, maskLim in testData:
     measCtr = ctrData.xyCtr
     nCounts = ctrData.counts
     nPts = ctrData.pix
-    print "masked err = %6.2f, %6.2f; est err = %.2f, %.2f; nCounts = %.0f; nPts = %d" % \
-        (measCtr[0] - actCtr[0], measCtr[1] - actCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], nCounts, nPts)
+    print("masked err = %6.2f, %6.2f; est err = %.2f, %.2f; nCounts = %.0f; nPts = %d" %
+        (measCtr[0] - actCtr[0], measCtr[1] - actCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], nCounts, nPts))
 
 
 ds9Win.xpaset("tile frames")
@@ -111,6 +111,6 @@ ds9Win.showArray(data - cleanData)
 
 ds9Win.xpaset("frame 2")
 ds9Win.showArray(data)
-if mask != None:
+if mask is not None:
     ds9Win.xpaset("frame 3")
     ds9Win.showArray(data * (1-mask))

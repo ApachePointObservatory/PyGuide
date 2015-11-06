@@ -1,3 +1,5 @@
+from __future__ import division, absolute_import, print_function
+
 import math
 
 class Stats:
@@ -11,9 +13,9 @@ class Stats:
         self._n += 1
         self._sum += val
         self._sumSq += val*val
-        if self._minVal == None or val < self._minVal:
+        if self._minVal is None or val < self._minVal:
             self._minVal = val
-        if self._maxVal == None or val > self._maxVal:
+        if self._maxVal is None or val > self._maxVal:
             self._maxVal = val
     
     def clear(self):

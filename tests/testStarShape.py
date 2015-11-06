@@ -17,6 +17,7 @@ History:
 2005-04-19 ROwen    Modified for PyGuide 2.0
 2005-10-14 ROwen    Supply null satMask for PyGuide 2.1.
 """
+import os.path
 import sys
 import PyGuide
 import pyfits
@@ -33,7 +34,8 @@ UseDS9 = True
 if len(sys.argv) > 1:
     filename = sys.argv[1]
 else:
-    filename = "test.fits"
+    testDir = os.path.dirname(__file__)
+    filename = os.path.join(testDir, "test.fits")
 
 testimg = pyfits.open(filename)
 data = testimg[0].data

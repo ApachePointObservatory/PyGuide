@@ -1,3 +1,4 @@
+from __future__ import division, absolute_import, print_function
 """Find Stars.
 
 Note: as with all PyGuide routines, the coordinate system origin
@@ -80,9 +81,10 @@ __all__ = ['findStars']
 import numpy
 import scipy.ndimage
 import numpy.ma
-import Centroid
-import Constants
-import ImUtil
+
+from . import Centroid
+from .Constants import DefThresh
+from . import ImUtil
 
 def _fmtList(alist):
     """Return "alist[0], alist[1], ..."
@@ -101,7 +103,7 @@ def findStars(
     mask,
     satMask,
     ccdInfo,
-    thresh = Constants.DefThresh,
+    thresh = DefThresh,
     radMult = 1.0,
     rad = None,
     verbosity = 0,
@@ -158,7 +160,7 @@ def findStars(
     if ds9Win:
         # show masked data in frame 1 and unmasked data in frame 2
         ds9Win.xpaset("frame 1")
-        if mask != None:
+        if mask is not None:
             ds9Win.showArray(data * (mask==0))
         else:
             ds9Win.showArray(data)
@@ -170,7 +172,7 @@ def findStars(
     maskedData = numpy.ma.masked_array(data, mask=mask, copy=True)
     imStats = ImUtil.skyStats(maskedData, thresh)
     if verbosity >= 1:
-        print "imStats=%s" % (imStats,)
+        print("imStats=%s" % (imStats,))
 
     # get a copy with the median used to fill in masked areas
     # and apply a filter to get rid of speckle
@@ -186,7 +188,7 @@ def findStars(
     labels, numElts = scipy.ndimage.label(smoothedData>imStats.dataCut, shapeArry)
     smoothedData = None # release the storage
     if verbosity >= 2:
-        print "findStars found %s possible stars above dataCut=%s" % (numElts, imStats.dataCut)
+        print("findStars found %s possible stars above dataCut=%s" % (numElts, imStats.dataCut))
 
     # examine the candidate stars and compute centroids
     countsCentroidList = []
@@ -200,11 +202,11 @@ def findStars(
         if 1 in ijSize:
             # object is too small to be of interest
             if verbosity >= 1:
-                print "findStars warning: candidate star at %s is too small; size=%s" % (xyCtrGuess, ijSize)
+                print("findStars warning: candidate star at %s is too small; size=%s" % (xyCtrGuess, ijSize))
             continue
         
         # region appears to be valid; centroid it
-        if rad == None:
+        if rad is None:
             actRad = max(ijSize[0], ijSize[1]) * radMult / 2.0
         else:
             actRad = rad
@@ -218,7 +220,7 @@ def findStars(
             ds9Win.xpaset("regions", "image; circle %s # group=ctrcirc" % _fmtList(args))
 
         if verbosity >= 2:
-            print "findStars centroid at %s with rad=%s" % (xyCtrGuess, actRad)
+            print("findStars centroid at %s with rad=%s" % (xyCtrGuess, actRad))
         ctrData = Centroid.centroid(
             data = data,
             mask = mask,
@@ -231,7 +233,7 @@ def findStars(
         )
         if not ctrData.isOK:
             if verbosity >= 1:
-                print "findStars warning: centroid at %s with rad=%s failed: %s" % (xyCtrGuess, actRad, ctrData.msgStr)
+                print("findStars warning: centroid at %s with rad=%s failed: %s" % (xyCtrGuess, actRad, ctrData.msgStr))
             continue
             
         countsCentroidList.append((ctrData.counts, ctrData))
@@ -247,11 +249,12 @@ def findStars(
     countsCentroidList.reverse()
     centroidList = [cc[1] for cc in countsCentroidList]
     if verbosity >= 2:
-        print "findStars returning data for %s stars:" % len(centroidList)
-        print "x ctr\ty ctr\tx err\ty err\t    pixels\tcounts\tradius"
+        print("findStars returning data for %s stars:" % len(centroidList))
+        print("x ctr\ty ctr\tx err\ty err\t    pixels\tcounts\tradius")
         for cd in centroidList:
-            print "%6.2f\t%6.2f\t%6.2f\t%6.2f\t%10.0f\t%6.0f\t%5.1f" % \
+            print("%6.2f\t%6.2f\t%6.2f\t%6.2f\t%10.0f\t%6.0f\t%5.1f" %
                 (cd.xyCtr[0], cd.xyCtr[1],
                  cd.xyErr[0], cd.xyErr[1],
                  cd.pix, cd.counts, cd.rad)
+            )
     return centroidList, imStats
