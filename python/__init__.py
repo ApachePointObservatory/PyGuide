@@ -25,9 +25,10 @@ Acknowledgements:
 - Jim Gunn supplied the centroiding algorithm. Connie Rockosi explained
   some of the subtleties.
 """
-from Version import __version__
-from Constants import *
-from Centroid import *
-from FindStars import *
-from StarShape import *
-import FakeData
+from __future__ import absolute_import
+from .Version import __version__
+from .Constants import *
+from .Centroid import *
+from .FindStars import *
+from .StarShape import *
+from . import FakeData

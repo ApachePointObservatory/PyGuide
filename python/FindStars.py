@@ -110,11 +110,11 @@ def findStars(
     doDS9 = False,
 ):
     """Find and centroid stars.
-    
+
     Inputs:
     - data      the image data [i,j]; this is converted to a numpy array of float32, if necessary
     - mask      a mask of invalid data (1 if invalid, 0 if valid); None if no mask.
-    - satMask   a maks of of saturated pixels (1 if saturated, 0 if not); None if no mask.
+    - satMask   a mask of of saturated pixels (1 if saturated, 0 if not); None if no mask.
     - ccdInfo   bias, read noise, etc: a PyGuide.CCDInfo object.
     - thresh    determines the point above which pixels are considered data;
                 valid data >= thresh * standard deviation + median
@@ -126,7 +126,7 @@ def findStars(
                 (if doDS9 true) show smoothed image in ds9 frame 3.
     - doDS9     if True, shows current image and other info in ds9 in current frame.
                 For this to work, you must have the RO package installed.
-    
+
     Returns two items:
     - centroidData  a list of centroid information for each star found, in decreasing
                     order of counts. Each element is a PyGuide.CentroidData object.
@@ -134,7 +134,7 @@ def findStars(
 
     Masks are optional. If specified, they must be the same shape as "data"
     and should be of type Bool. None means no mask (all data is OK).
-    
+
     Found "stars" are not required to look star-like and so
     are not fit to a stellar profile. However, if the object is not
     circularly symmetric then the centroid it returns may not match
@@ -151,12 +151,12 @@ def findStars(
     data = Centroid.conditionData(data)
     mask = Centroid.conditionMask(mask)
     satMask = Centroid.conditionMask(satMask)
-    
+
     if doDS9:
         ds9Win = ImUtil.openDS9Win()
     else:
         ds9Win = None
-            
+
     if ds9Win:
         # show masked data in frame 1 and unmasked data in frame 2
         ds9Win.xpaset("frame 1")
@@ -167,7 +167,7 @@ def findStars(
         ds9Win.xpaset("frame 2")
         ds9Win.showArray(data)
         ds9Win.xpaset("frame 1")
-    
+
     # compute background statistics
     maskedData = numpy.ma.masked_array(data, mask=mask, copy=True)
     imStats = ImUtil.skyStats(maskedData, thresh)
@@ -182,7 +182,7 @@ def findStars(
         ds9Win.xpaset("frame 3")
         ds9Win.showArray(smoothedData)
         ds9Win.xpaset("frame 1")
-    
+
     # look for points larger than median + dataCut * stdDev
     shapeArry = numpy.ones((3,3))
     labels, numElts = scipy.ndimage.label(smoothedData>imStats.dataCut, shapeArry)
@@ -197,14 +197,14 @@ def findStars(
         ijSize = [slc.stop - slc.start for slc in ijSlice]
         ijCtrInd = [(slc.stop + slc.start) / 2.0 for slc in ijSlice]
         xyCtrGuess = ImUtil.xyPosFromIJPos(ijCtrInd)
-        
+
         # reject regions only 1 pixel tall or wide
         if 1 in ijSize:
             # object is too small to be of interest
             if verbosity >= 1:
                 print("findStars warning: candidate star at %s is too small; size=%s" % (xyCtrGuess, ijSize))
             continue
-        
+
         # region appears to be valid; centroid it
         if rad is None:
             actRad = max(ijSize[0], ijSize[1]) * radMult / 2.0
@@ -235,15 +235,15 @@ def findStars(
             if verbosity >= 1:
                 print("findStars warning: centroid at %s with rad=%s failed: %s" % (xyCtrGuess, actRad, ctrData.msgStr))
             continue
-            
+
         countsCentroidList.append((ctrData.counts, ctrData))
-        
+
         if ds9Win:
             # display x showing centroid
             args = ImUtil.ds9PosFromXYPos(ctrData.xyCtr)
             ds9Win.xpaset("regions", "image; x point %s # group=centroid" % _fmtList(args))
-    
-    
+
+
     # sort by decreasing counts
     countsCentroidList.sort()
     countsCentroidList.reverse()

@@ -54,7 +54,7 @@ Acknowledgements:
 - The code uses a new asymmetry weighting function developed with help from Connie Rockosi
 - This code is adapted from the SDSS centroiding code, which was written by Jim Gunn
   and cleaned up by Connie Rockosi.
-    
+
 History:
 2004-03-22 ROwen    First release.
 2004-04-07 ROwen    Packaged as part of PyGuide and moved test code elsewhere.
@@ -133,7 +133,7 @@ _MinPixForStats = 20    # minimum # of pixels needed to measure med and std dev
 
 class CentroidData:
     """Centroid data, including the following fields:
-    
+
     flags; check before paying attention to the remaining data:
     - isOK      if False then centroiding failed; see msgStr for more info
     - msgStr    warning or error message, if any
@@ -142,7 +142,7 @@ class CentroidData:
     basic info:
     - rad       radius for centroid search (pix)
     - imStats   image statistics such as median and std. dev. (if known); an ImUtil.ImStats object.
-    
+
     star data:
     - xyCtr     the x,y centroid (pixels); None if unspecified
     - xyErr     the predicted 1-sigma uncertainty in xyCtr (pixels); [nan, nan] if unspecified
@@ -157,12 +157,12 @@ class CentroidData:
                     pixNoise(rad) = sqrt((readNoise/ccdGain)^2 + (meanVal(rad)-bias)/ccdGain)
     - pix       the total number of unmasked pixels (ADU)
     - counts    the total number of counts (ADU)
-    
+
     Warning: asymm is supposed to be normalized, but it gets large
     for bright objects with lots of masked pixels. This may be
     simply because the value is only computed at the nearest integer pixel
     or because the noise is assumed gaussian, or some error.
-    
+
     Suggested use:
     - check isOK; if False do not use the data
     - check nSat(); if not None and more than a few then be cautious in using the data
@@ -183,7 +183,7 @@ class CentroidData:
         self.isOK = isOK
         self.msgStr = msgStr
         self.nSat = nSat
-        
+
         self.rad = rad
         if imStats is None:
             imStats = ImUtil.ImStats()
@@ -193,11 +193,11 @@ class CentroidData:
         if xyErr is None:
             xyErr = numpy.array([numpy.nan, numpy.nan])
         self.xyErr = xyErr
-        
+
         self.asymm = asymm
         self.pix = pix
         self.counts = counts
-    
+
     def __repr__(self):
         dataList = []
         for arg in ("isOK", "msgStr", "nSat", "xyCtr", "xyErr", "asymm", "pix", "counts", "rad", "imStats"):
@@ -231,10 +231,10 @@ def basicCentroid(
                 3: print basic iteration info, 4: print detailed iteration info.
                 Note: there are no warnings at this time because the relevant info is returned.
     - doDS9     if True, diagnostic images are displayed in ds9
-    
+
     Masks are optional. If specified, they must be the same shape as "data"
     and should be of type Bool. None means no mask (all data is OK).
-        
+
     Returns a CentroidData object (which see for more info),
     but with no imStats info.
     """
@@ -272,7 +272,7 @@ def basicCentroid(
         # display circle showing the centroider input in frame 1
         args = list(xyGuess) + [rad]
         ds9Win.xpaset("regions", "image; circle %s # group=ctrcirc" % _fmtList(args))
-    
+
     try:
         # OK, use this as first guess at maximum. Extract radial profiles in
         # a 3x3 gridlet about this, and walk to find minimum fitting error
@@ -280,13 +280,13 @@ def basicCentroid(
         asymmArr = numpy.zeros([3,3], float)
         totPtsArr = numpy.zeros([3,3], int)
         totCountsArr = numpy.zeros([3,3], float)
-        
+
         niter = 0
         while True:
             niter += 1
             if niter > _MaxIter:
                 raise RuntimeError("could not find a star in %s iterations" % (niter,))
-            
+
             for i in range(3):
                 ii = maxi + i - 1
                 for j in range(3):
@@ -299,31 +299,31 @@ def basicCentroid(
 # (warning: the error estimate will be invalid and chiSq will not be normalized)
 #                   asymmArr[i, j], totCountsArr[i, j], totPtsArr[i, j] = radProf.radAsymm(
 #                       data, mask, (ii, jj), rad)
-    
+
                     if verbosity > 3:
                         print("basicCentroid: ind=[%s, %s] ctr=(%s, %s) asymm=%10.1f, totPts=%s, totCounts=%s" % \
                             (i, j, ii, jj, asymmArr[i, j], totPtsArr[i, j], totCountsArr[i, j]))
-    
+
             # have error matrix. Find minimum
             ii, jj = scipy.ndimage.minimum_position(asymmArr)
             ii -= 1
             jj -= 1
-    
+
             if verbosity > 2:
                 print("basicCentroid: error matrix min ii=%d, jj=%d, errmin=%5.1f" % (ii, jj, asymmArr[ii,jj]))
                 if verbosity > 3:
                     print("basicCentroid: asymm matrix =\n", asymmArr)
-    
+
             if (ii != 0 or jj != 0):
                 # minimum error not in center; walk and try again
                 maxi += ii
                 maxj += jj
                 if verbosity > 2:
                     print("shift by", -ii, -jj, "to", maxi, maxj)
-    
+
                 if ((maxi - ijIndGuess[0])**2 + (maxj - ijIndGuess[1])**2) >= rad**2:
                     raise RuntimeError("could not find star within %r pixels" % (rad,))
-                
+
                 # shift asymmArr and totPtsArr to minimum is in center again
                 asymmArr = scipy.ndimage.shift(asymmArr, (-ii, -jj))
                 totCountsArr = scipy.ndimage.shift(totCountsArr, (-ii, -jj))
@@ -331,10 +331,10 @@ def basicCentroid(
             else:
                 # Have minimum. Get out and go home.
                 break
-    
+
         if verbosity > 2:
             print("basicCentroid: found ijMax=%s after %r iterations" % ((maxi, maxj), niter,))
-        
+
         # perform a parabolic fit to find true centroid
         # and compute the error estimate
         # y(x) = ymin + a(x-xmin)^2
@@ -346,7 +346,7 @@ def basicCentroid(
         bi = 0.5 * (asymmArr[2, 1] - asymmArr[0, 1])
         aj = 0.5 * (asymmArr[1, 2] - 2.0*asymmArr[1, 1] + asymmArr[1, 0])
         bj = 0.5 * (asymmArr[1, 2] - asymmArr[1, 0])
-        
+
         di = -0.5*bi/ai
         dj = -0.5*bj/aj
         ijCtr = (
@@ -354,11 +354,11 @@ def basicCentroid(
             maxj + dj,
         )
         xyCtr = ImUtil.xyPosFromIJPos(ijCtr)
-    
+
         if verbosity > 2:
             print("basicCentroid: asymmArr[0:3, 1]=%s, ai=%s, bi=%s, di=%s, iCtr=%s" % (asymmArr[0:3, 1], ai, bi, di, ijCtr[0]))
             print("basicCentroid: asymmArr[1, 0:3]=%s, aj=%s, bj=%s, dj=%s, jCtr=%s" % (asymmArr[1, 0:3], aj, bj, dj, ijCtr[1]))
-        
+
         # crude error estimate, based on measured asymmetry
         # note: I also tried using the minimum along i,j but that sometimes is negative
         # and this is already so crude that it's not likely to help
@@ -366,12 +366,12 @@ def basicCentroid(
         iErr = math.sqrt(radAsymmSigma / ai)
         jErr = math.sqrt(radAsymmSigma / aj)
         xyErr = (jErr, iErr)
-    
+
         if ds9Win:
             # display x at centroid
             ds9Win.xpaset("regions", "image; x point %s # group=centroid" % \
                         _fmtList(xyCtr))
-    
+
 
         # count # saturated pixels, if satMask available
         if satMask is None:
@@ -400,10 +400,10 @@ def basicCentroid(
                 )
                 subMask = subMaskObj.getSubFrame()
                 numpy.logical_and(maybeSatPixel, numpy.logical_not(subMask), maybeSatPixel)
-            
+
             numpy.logical_and(subSatMask, maybeSatPixel, maybeSatPixel)
             nSat = scipy.ndimage.sum(maybeSatPixel)
-    
+
         ctrData = CentroidData(
             isOK = True,
             rad = rad,
@@ -444,7 +444,7 @@ def centroid(
     checkSig = (True, True),
 ):
     """Centroid and then confirm that there is usable signal at the location.
-    
+
     Inputs:
     - data      image data [i,j]
     - mask      a mask of invalid data (1 if invalid, 0 if valid); None if no mask.
@@ -462,14 +462,14 @@ def centroid(
     - doDS9     if True, display diagnostic images in ds9
     - checkSig  Verify usable signal for circle at (xyGuess, xy centroid)?
                 If both are false then imStats is not computed.
-    
+
     Returns a CentroidData object (which see for more info).
     """
     if verbosity > 2:
         print("data =", data)
         print("mask =", mask)
         print("centroid(xyGuess=%s, rad=%s, ccdInfo=%s, thresh=%s)" % (xyGuess, rad, ccdInfo, thresh))
-    
+
     if checkSig[0]:
         signalOK, imStats = checkSignal(
             data = data,
@@ -524,7 +524,7 @@ def checkSignal(
     verbosity = 0,
 ):
     """Check that there is usable signal in a given circle.
-    
+
     Inputs:
     - data      image data [i,j]
     - mask      a mask [i,j] of 0's (valid data) or 1's (invalid); None if no mask.
@@ -537,11 +537,11 @@ def checkSignal(
                 values less than PyGuide.Constants.MinThresh are silently increased
     - doSmooth  if True apply a 3x3 median filter to smooth the data
     - verbosity 0: no output, 1: print warnings, 2: print information, 3: print iteration info.
-    
+
     Return:
     - signalOK  True if usable signal is present
     - imStats   background statistics: a PyGuide.ImStats object
-    
+
     Details of usable signal:
     - Computes median and stdDev in a region extending from a circle of radius "rad"
       to a box of size (rad+_OuterRadAdd)*2 on a side.
@@ -572,7 +572,7 @@ def checkSignal(
             nPts = subData.size,
         )
     subCtrIJ = subDataObj.subIJFromFullIJ(ImUtil.ijPosFromXYPos(xyCtr))
-    
+
     if mask is not None:
         subMaskObj = ImUtil.subFrameCtr(
             mask,
@@ -588,7 +588,7 @@ def checkSignal(
     def makeCircle(i, j):
         return ((i-subCtrIJ[0])**2 + (j-subCtrIJ[1])**2) > rad**2
     circleMask = numpy.fromfunction(makeCircle, subData.shape)
-    
+
     # make a copy of the data outside a circle of radius "rad";
     # use this to compute background stats
     bkgndPixels = numpy.extract(numpy.logical_and(circleMask, numpy.logical_not(subMask)), subData)
@@ -604,7 +604,7 @@ def checkSignal(
             return False, ImUtil.ImStats(
                 nPts = bkgndPixels.size,
             )
-    
+
     imStats = ImUtil.skyStats(bkgndPixels, thresh)
     del(bkgndPixels)
 
@@ -618,7 +618,7 @@ def checkSignal(
     if doSmooth:
         scipy.ndimage.median_filter(smoothedData, 3, output=smoothedData)
     del(dataPixels)
-    
+
     # look for a blob of at least 2x2 adjacent pixels with smoothed value >= dataCut
     # note: it'd be much simpler but less safe to simply test:
     #    if max(smoothedData) < dataCut: # have signal
@@ -641,7 +641,7 @@ def checkSignal(
 def conditionData(data):
     """Convert dataArr to the correct type
     such that basicCentroid can operate most efficiently on it.
-    
+
     Warning: does not copy the data unless necessary.
     """
     return conditionArr(data, desType=numpy.float32)
@@ -649,7 +649,7 @@ def conditionData(data):
 def conditionMask(mask):
     """Convert mask to the correct type
     such that basicCentroid can operate most efficiently on it.
-    
+
     Mask is optional, so a value of None returns None.
 
     Warning: does not copy the data unless necessary.

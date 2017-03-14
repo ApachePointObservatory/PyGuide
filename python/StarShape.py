@@ -57,7 +57,7 @@ History:
 2004-08-04 ROwen    Improved calculation of ij pixel index and position.
                     Simplified final computation of minimum width parameter.
                     If shape computation fails, converts ArithmeticError into RuntimeError
-2004-08-06 ROwen    Fixed invalid variable reference when _StarShapeIterDebug true. 
+2004-08-06 ROwen    Fixed invalid variable reference when _StarShapeIterDebug true.
 2004-12-01 ROwen    Modified StarShapeData to use NaN as the default for each argument.
                     Added __all__.
 2005-02-07 ROwen    Changed starShape argument ctr (i,) to xyCtr.
@@ -104,7 +104,7 @@ _MinRad = 3.0
 
 class StarShapeData:
     """Guide star fit data
-    
+
     Attributes:
     - isOK      if False the fit failed; see msgStr for more info
     - msgStr    warning or error message, if any
@@ -127,7 +127,7 @@ class StarShapeData:
         self.bkgnd = float(bkgnd)
         self.fwhm = float(fwhm)
         self.chiSq = float(chiSq)
-    
+
     def __repr__(self):
         dataList = []
         for arg in ("isOK", "msgStr", "ampl", "fwhm", "bkgnd", "chiSq"):
@@ -147,7 +147,7 @@ def starShape(
     doPlot = False,
 ):
     """Fit a double gaussian profile to a star
-    
+
     Inputs:
     - data      a numpy array of float32 data
     - mask      a numpy array of bool, or None if no mask (all data valid).
@@ -168,7 +168,7 @@ def starShape(
 
     # compute index of nearest pixel center (pixel whose center is nearest xyCtr)
     ijCtrInd = ImUtil.ijIndFromXYPos(xyCtr)
-    
+
     # compute offset of position from nearest pixel center
     ijCtrFloat = ImUtil.ijPosFromXYPos(xyCtr)
     ijOff = [abs(round(pos) - pos) for pos in ijCtrFloat]
@@ -183,7 +183,7 @@ def starShape(
     var = numpy.zeros([radIndArrLen], numpy.float64)
     nPts = numpy.zeros([radIndArrLen], numpy.int32)
     radProfModule.radProf(data, mask, ijCtrInd, rad, radProf, var, nPts)
-    
+
     # fit data
     try:
         gsData = _fitRadProfile(radProf, var, nPts, rad, verbosity=verbosity, doPlot=doPlot)
@@ -192,10 +192,10 @@ def starShape(
                 (gsData.ampl, gsData.fwhm, gsData.bkgnd, gsData.chiSq))
     except Exception as e:
         return StarShapeData(isOK = False, msgStr = str(e))
-    
+
     """Adjust the width for the fact that the centroid
     is not exactly on the center of a pixel
-    
+
     The equivalent sigma^2 of a profile displaced by d from its center
     is sig^2 + d^2/2, so we need to subtract d^2/2 from the sigma^2
     of an offcenter extracted profile to get the true sigma^2.
@@ -206,17 +206,17 @@ def starShape(
     rawSigSq = (FWHMPerSigma * rawFWHM)**2
     corrSigSq = rawSigSq - (0.5 * offSq)
     gsData.fwhm = math.sqrt(corrSigSq) / FWHMPerSigma
-    
+
     if verbosity >= 2:
         print("starShape: ijOff=%.2f, %.2f; offSq=%.2f; rawFWHM=%.3f; corrFWHM=%.3f" % \
             (ijOff[0], ijOff[1], offSq, rawFWHM, gsData.fwhm))
-        
+
     return gsData
 
 
 def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     """Fit in profile space to determine the width, amplitude, and background.
-    
+
     Inputs:
     - radProf   radial profile around center pixel by radial index
     - var       variance as a function of radius
@@ -225,7 +225,7 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     - verbosity 0: no output, 1: print warnings, 2: print information, 3: print iteration info.
                 Note: there are no warnings at this time because warnings are returned in the msgStr field.
     - doPlot    if True, output diagnostics using matplotlib
-    
+
     Returns a StarShapeData object
     """
     if verbosity >= 2:
@@ -235,7 +235,7 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
     radSq = radProfModule.radSqByRadInd(len(radProf))
     totPnts = numpy.sum(nPts)
     totCounts = numpy.sum(nPts*radProf)
-    
+
     # This radial weight is the one used by Jim Gunn and it seems to do as well
     # as anything else I tried. however, it results in a chiSq that is not normalized.
 #   radWeight = nPts
@@ -261,11 +261,11 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
         pylab.plot(nPts)
         pylab.subplot(4,1,3)
         pylab.plot(radWeight)
-    
+
     def myfunc(fwhm):
         ampl, bkgnd, chiSq, seeProf = _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosity=verbosity)
         return chiSq
-        
+
     # brute-force check a lot of values to find a good starting place
     fwhmArr = []
     fwhm = 1.0
@@ -276,11 +276,11 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
 #   amplArr = numpy.zeros([nTrials], float)
 #   bkgndArr = numpy.zeros([nTrials], float)
     chiSqArr = numpy.zeros([nTrials], float)
-    
+
     minInd = 0
     BadChiSq = 9.9e99
     minChiSq = BadChiSq
-    
+
     if verbosity > 2:
         print("find bracketing values")
     for ind in range(nTrials):
@@ -289,7 +289,7 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
 #       amplArr[ind] = ampl
 #       bkgndArr[ind] = bkgnd
         chiSqArr[ind] = chiSq
-        
+
         if ampl > 0 and chiSq < minChiSq:
             minChiSq = chiSq
             minInd = ind
@@ -303,16 +303,16 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
 
     if minInd in (0, nTrials-1):
         raise RuntimeError("Could not find bracketing values for fwhm")
-            
+
     firstInd = max(0, minInd - 2)
     lastInd = min(nTrials-1, minInd + 2)
     if verbosity > 2:
         print("firstInd=%d; guess minInd=%d, lastInd=%d" % (firstInd, minInd, lastInd))
-    
+
     fwhmFirst = fwhmArr[firstInd]
     fwhmMin = fwhmArr[minInd]
     fwhmLast = fwhmArr[lastInd]
-    fwhmBracket = (fwhmFirst, fwhmMin, fwhmLast)    
+    fwhmBracket = (fwhmFirst, fwhmMin, fwhmLast)
     if verbosity > 2:
         print("fwhmFirst=%0.1f; guess fwhmMin=%0.1f; fwhmLast=%0.1f" % (fwhmFirst, fwhmMin, fwhmLast))
 
@@ -327,7 +327,7 @@ def _fitRadProfile(radProf, var, nPts, rad, verbosity=0, doPlot=False):
         pylab.subplot(4,1,1)
         fitCurve = (seeProf * ampl) + bkgnd
         pylab.plot(fitCurve)
-            
+
     # return StarShapeData containing fit data
     return StarShapeData(
         isOK = True,
@@ -344,7 +344,7 @@ def _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosit
 
     # compute the seeing profile for the specified width parameter
     seeProf = _seeProf(radSq, fwhm)
-    
+
     # compute sums
     nPtsSeeProf = nPts*seeProf # temporary array
     sumSeeProf = numpy.sum(nPtsSeeProf)
@@ -375,12 +375,12 @@ def _fitIter(radProf, nPts, radWeight, radSq, totPnts, totCounts, fwhm, verbosit
         print("_fitIter: ampl=%s; bkgnd=%s; fwhm=%s; chiSq=%.2f" %
             (ampl, bkgnd, fwhm, chiSq)
         )
-    
+
     return ampl, bkgnd, chiSq, seeProf
 
 def _seeProf(radSq, fwhm):
     """Computes the predicted star profile for the given width parameter.
-    
+
     Inputs:
     - radSq     array of radius squared values
     - fwhm      desired fwhm

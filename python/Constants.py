@@ -38,7 +38,7 @@ NaN = float("nan")
 # Misc
 class CCDInfo:
     """Info about the CCD
-    
+
     - bias      ccd bias (ADU)
     - readNoise ccd read noise (e-)
     - ccdGain   ccd inverse gain (e-/ADU)
@@ -55,7 +55,7 @@ class CCDInfo:
         self.readNoise = float(readNoise)
         self.ccdGain = float(ccdGain)
         self.satLevel = satLevel
-    
+
     def __repr__(self):
         dataList = []
         for arg in ("bias", "readNoise", "ccdGain", "satLevel"):

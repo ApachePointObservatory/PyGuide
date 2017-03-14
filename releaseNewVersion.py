@@ -7,16 +7,16 @@ To use:
 from __future__ import with_statement
 import os
 import re
-import shutil
 import sys
 import subprocess
 
-UploadToPyPI = False    # wait until package uses numpy before uploading to PyPI
+UploadToPyPI = True    # wait until package uses numpy before uploading to PyPI
 
 PkgName = "PyGuide"
 PythonDir = "python"
 sys.path.insert(0, PythonDir)
-import Version
+import Version  # noqa  must come after modifying sys.path
+
 queryStr = "Version from %s.Version = %s; is this OK? (y/[n]) " % (PkgName, Version.__version__,)
 versOK = raw_input(queryStr)
 if not versOK.lower() == "y":
@@ -35,59 +35,18 @@ with file(os.path.join("docs", "VersionHistory.html")) as vhist:
                 print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, Version.__version__)
                 sys.exit(0)
 
-print "Status of subversion repository:"
+print "Status of git repository:"
 
-subprocess.call(["svn", "status"])
+subprocess.call(["git", "status"])
 
-versOK = raw_input("Is the subversion repository up to date? (y/[n]) ")
+versOK = raw_input("Is the git repository up to date? (y/[n]) ")
 if not versOK.lower() == "y":
     sys.exit(0)
 
-print "Subversion repository OK"
+print "Git repository OK"
 
-exportRoot = os.environ["HOME"]
-exportFileName = "%s_%s" % (PkgName, Version.__version__)
-exportPath = os.path.abspath(os.path.join(exportRoot, exportFileName))
-zipFileName = "%s.zip" % (exportFileName,)
-zipFilePath = os.path.abspath(os.path.join(exportRoot, zipFileName))
-if os.path.exists(exportPath):
-    print "Export directory %r already exists" % (exportPath)
-    versOK = raw_input("Should I delete the old %r? (yes/[n]) " % (exportPath,))
-    if not versOK.lower() == "yes":
-        sys.exit(0)
-    print "Deleting %r" % (exportPath,)
-    shutil.rmtree(exportPath)
-if os.path.exists(zipFilePath):
-    getOK = raw_input("File %r already exists! Should I delete it? (yes/[n]) " % (zipFilePath,))
-    if not getOK.lower() == "yes":
-        sys.exit(0)
-    print "Deleting %r" % (zipFilePath,)
-    os.remove(zipFilePath)
-
-print "Exporting subversion repository to %r" % (exportPath,)
-
-status = subprocess.call(["svn", "export", ".", exportPath])
-if status != 0:
-    print "Svn export failed!"
-    sys.exit(0)
-
-print "Zipping %r" % (exportPath,)
-status = subprocess.call(["zip", "-r", "-q", zipFileName, exportFileName], cwd=exportRoot)
-if status != 0:
-    print "Zip failed!"
-else:
-    print "Unix package zipped"
-    status = subprocess.call(["open", exportRoot])
-    
 if UploadToPyPI:
     print "Uploading to PyPI"
-    status = subprocess.call(["python", "setup.py", "sdist", "upload"], cwd=exportPath)
+    status = subprocess.call(["python", "setup.py", "sdist", "upload"])
     if status != 0:
         print "Build and upload failed!"
-
-delOK = raw_input("OK to delete %r? (y/[n]) " % (exportPath,))
-if not delOK.lower() == "y":
-    sys.exit(0)
-
-print "Deleting %r" % (exportPath,)
-shutil.rmtree(exportPath)

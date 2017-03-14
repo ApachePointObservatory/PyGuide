@@ -29,7 +29,7 @@ def fakeStar(
 ):
     """Return a 2-d array containing a noise-free double gaussian
     and whose values are truncated at 2**16-1
-    
+
     Inputs:
     - arrShape  desired array shape (2 integers)
     - xyCtr     desired x,y center
@@ -58,7 +58,7 @@ def addNoise(
     ccdInfo,
 ):
     """Adds poisson noise and gaussian read noise to the specified data.
-    
+
     Inputs:
     - data      noiseless image, in ADU
     - sky       sky level, in ADU
