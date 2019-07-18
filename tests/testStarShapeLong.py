@@ -25,7 +25,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from past.utils import old_div
 import sys
 import traceback
 import numpy
@@ -95,17 +94,17 @@ print("fwhm ampl    bg  xCtr    yCtr    maskWid xCtMeas yCtMeas fitFWHM fitAmpl 
 bkgnd = Sky + CCDInfo.bias
 for ampl in AmplValues:
     for fwhm in FWHMValues:
-        sigma = old_div(fwhm, PyGuide.FWHMPerSigma)
+        sigma = fwhm / PyGuide.FWHMPerSigma
         for maskMult in MaskWidthsPerFWHM:
             maskWidth = maskMult * fwhm
-            maskRad = int(old_div(maskWidth, 2.0))
+            maskRad = int(maskWidth / 2.0)
             mask[:,:] = 0
             if maskRad > 0:
                 mask[nomCtr[0] - maskRad: nomCtr[0] + maskRad + 1, :] = 1
 
             numpy.random.seed(1)
             for ii in range(NumTries):
-                xyCtr = numpy.random.uniform(old_div(-fwhm,2.0), old_div(fwhm,2.0), size=(2,)) + nomCtr
+                xyCtr = numpy.random.uniform(-fwhm / 2.0, fwhm /2.0, size=(2,)) + nomCtr
 
                 cleanData = PyGuide.FakeData.fakeStar(imShape, xyCtr, sigma, ampl)
                 data = PyGuide.FakeData.addNoise(

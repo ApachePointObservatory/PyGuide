@@ -21,7 +21,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from past.utils import old_div
 import numpy
 import PyGuide
 from Stats import Stats
@@ -85,17 +84,17 @@ ctrXStats = Stats()
 ctrYStats = Stats()
 for ampl in AmplValues:
     for fwhm in FWHMValues:
-        sigma = old_div(fwhm, PyGuide.FWHMPerSigma)
+        sigma = fwhm / PyGuide.FWHMPerSigma
         for maskMult in MaskWidthsPerFWHM:
             maskWidth = maskMult * fwhm
-            maskRad = int(old_div(maskWidth, 2.0))
+            maskRad = int(maskWidth / 2.0)
             mask[:,:] = 0
             if maskRad > 0:
                 mask[nomCtr[0] - maskRad: nomCtr[0] + maskRad + 1, :] = 1
 
             numpy.random.seed(1)
             for ii in range(NumTries):
-                actCtr = numpy.random.uniform(old_div(-fwhm,2.0), old_div(fwhm,2.0), size=(2,)) + nomCtr
+                actCtr = numpy.random.uniform(-fwhm / 2.0, fwhm / 2.0, size=(2,)) + nomCtr
 
                 cleanData = PyGuide.FakeData.fakeStar(imShape, actCtr, sigma, ampl)
                 data = PyGuide.FakeData.addNoise(
