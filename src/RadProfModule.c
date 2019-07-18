@@ -1115,21 +1115,10 @@ static PyMethodDef radProfMethods[] = {
         radProfMethods
     };
 
-#endif
-
-
-#if PY_MAJOR_VERSION >= 3
-
     // Module initialization function
     PyMODINIT_FUNC PyInit_radProf(void) {
         import_array();
         return PyModule_Create(&pyguidemodule);
-        // PyObject *m;
-        // m = PyModule_Create(&pyguidemodule);
-        // if (m == NULL)
-        //     return NULL;
-
-        // import_array();
     }
 
 #else
