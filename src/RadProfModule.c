@@ -1103,23 +1103,45 @@ static PyMethodDef radProfMethods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-static struct PyModuleDef pyguidemodule = {
-    PyModuleDef_HEAD_INIT,
-    "radProf",   /* name of module */
-    radProfModule_doc, /* module documentation, may be NULL */
-    -1,       /* size of per-interpreter state of the module,
-                 or -1 if the module keeps state in global variables. */
-    radProfMethods
-};
 
-// Module initialization function
-PyMODINIT_FUNC PyInit_radProf(void) {
-    import_array();
-    return PyModule_Create(&pyguidemodule);
-    // PyObject *m;
-    // m = PyModule_Create(&pyguidemodule);
-    // if (m == NULL)
-    //     return NULL;
+#if PY_MAJOR_VERSION >= 3
 
-    // import_array();
-}
+    static struct PyModuleDef pyguidemodule = {
+        PyModuleDef_HEAD_INIT,
+        "radProf",   /* name of module */
+        radProfModule_doc, /* module documentation, may be NULL */
+        -1,       /* size of per-interpreter state of the module,
+                    or -1 if the module keeps state in global variables. */
+        radProfMethods
+    };
+
+#endif
+
+
+#if PY_MAJOR_VERSION >= 3
+
+    // Module initialization function
+    PyMODINIT_FUNC PyInit_radProf(void) {
+        import_array();
+        return PyModule_Create(&pyguidemodule);
+        // PyObject *m;
+        // m = PyModule_Create(&pyguidemodule);
+        // if (m == NULL)
+        //     return NULL;
+
+        // import_array();
+    }
+
+#else
+
+    // Module initialization function
+    PyMODINIT_FUNC initradProf(void) {
+        PyObject *m;
+        m = Py_InitModule3("radProf", radProfMethods, radProfModule_doc);
+        if (m == NULL)
+            return;
+
+        import_array();
+    }
+
+#endif
