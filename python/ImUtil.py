@@ -187,7 +187,7 @@ class SubFrame(object):
         desBegInd,
         desEndInd,
     ):
-        self.dataArr = numpy.array(dataArr)
+        self.dataArr = numpy.array(dataArr, copy=False)
         #print("SubFrame(data%s, desBegInd=%s, desEndInd=%s)" % (self.dataArr.shape, desBegInd, desEndInd))
 
         # round desired i,j index (just in case)

@@ -664,4 +664,4 @@ def conditionArr(arr, desType):
 
     Warning: does not copy the data unless necessary.
     """
-    return numpy.array(arr, dtype=desType, order="C")
+    return numpy.array(arr, dtype=desType, order="C", copy=False)
